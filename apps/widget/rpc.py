@@ -331,7 +331,6 @@ class Rpc(BaseRpc):
         language = video.subtitle_language(language_code)
 
         if (language and language.is_complete_and_synced()
-                     and team.moderates_videos()
                      and not can_post_edit_subtitles(team, user)):
             message = _("Sorry, you do not have the permission to edit these subtitles. If you believe that they need correction, please contact the team administrator.")
             return { "can_edit": False, "locked_by": str(team_video.team), "message": message }
@@ -521,10 +520,12 @@ class Rpc(BaseRpc):
 
     # Permissions
     def can_user_edit_video(self, request, video_id):
-        """Return a dictionary of information about what the user can do with this video.
+        """Check a user's permissions to edit subtitles on a video
 
-        The response will contain can_subtitle and can_translate attributes.
-
+        The response will contain:
+            can_subtitle - can the user add new subtitles?
+            can_translate - can the user translate subtitles?
+            can_post_edit - can the user edit completed languages?
         """
         video = models.Video.objects.get(video_id=video_id)
         team_video = video.get_team_video()
@@ -532,13 +533,17 @@ class Rpc(BaseRpc):
         if not team_video:
             can_subtitle = True
             can_translate = True
+            can_post_edit = True
         else:
             can_subtitle = can_create_and_edit_subtitles(request.user, team_video)
             can_translate = can_create_and_edit_translations(request.user, team_video)
+            can_post_edit = can_post_edit_subtitles(team_video.team, request.user)
 
         return { 'response': 'ok',
                  'can_subtitle': can_subtitle,
-                 'can_translate': can_translate, }
+                 'can_translate': can_translate,
+                 'can_post_edit': can_post_edit,
+               }
 
 
     # Finishing and Saving

@@ -607,6 +607,8 @@ def can_publish_edits_immediately(team_video, user, lang):
 
 def can_post_edit_subtitles(team, user):
     """ Returns wheter the user has permission to post edit an original language """
+    if not team.moderates_videos():
+        return True
     member = get_member(user, team)
     return member.role != ROLE_CONTRIBUTOR
 

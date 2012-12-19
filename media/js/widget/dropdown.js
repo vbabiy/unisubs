@@ -34,8 +34,9 @@ unisubs.widget.DropDown = function(videoID, dropDownContents, videoTab) {
     this.subtitleState_ = null;
     this.shown_ = false;
     this.languageClickHandler_ = new goog.events.EventHandler(this);
-    this.showAddLanguageLink_ = false;
-    this.showImproveSubtitlesLink_ = false;
+    this.canTranslate_ = false;
+    this.canSubtitle_ = false;
+    this.canPostEdit_ = false;
 };
 
 goog.inherits(unisubs.widget.DropDown, goog.ui.Component);
@@ -76,7 +77,7 @@ unisubs.widget.DropDown.prototype.setCurrentSubtitleState = function(subtitleSta
     this.clearCurrentLang_();
     this.subtitleState_ = subtitleState;
     this.setCurrentLangClassName_();
-    unisubs.style.showElement(this.improveSubtitlesLink_, !!subtitleState);
+    this.updateActionLinks_();
     goog.dom.getFirstElementChild(this.downloadSubtitlesLink_).href =
         this.createDownloadSRTURL_();
 };
@@ -209,6 +210,7 @@ unisubs.widget.DropDown.prototype.createActionLinks_ = function($d) {
                 $d('a', {'href': unisubs.getVideoHomepageURL(this.videoID_)},
                     'video page'),
                 ' to contribute.'));
+    unisubs.style.showElement(this.moderatedNotice_, false);
 
     this.createAccountLink_ =
         $d('li', 'unisubs-createAccount',
@@ -230,9 +232,10 @@ unisubs.widget.DropDown.prototype.createActionLinks_ = function($d) {
 unisubs.widget.DropDown.prototype.moderatedResponseReceived_ = function(jsonResult) {
     var $d = goog.bind(this.getDomHelper().createDom, this.getDomHelper());
 
-    this.showAddLanguageLink_ = jsonResult['can_translate'];
-    this.showImproveSubtitlesLink_ = jsonResult['can_subtitle'];
-    this.addActionLinks_();
+    this.canTranslate_ = jsonResult['can_translate'];
+    this.canSubtitle_ = jsonResult['can_subtitle'];
+    this.canPostEdit_ = jsonResult['can_post_edit'];
+    this.updateActionLinks_();
 };
 unisubs.widget.DropDown.prototype.addModeratedActionLinks_ = function() {
     unisubs.Rpc.call(
@@ -240,48 +243,67 @@ unisubs.widget.DropDown.prototype.addModeratedActionLinks_ = function() {
         { 'video_id': this.videoID_ },
         goog.bind(this.moderatedResponseReceived_, this));
 };
-unisubs.widget.DropDown.prototype.addModeratedNotice_ = function() {
-    goog.dom.insertChildAt(this.videoActions_, this.moderatedNotice_, 0);
-};
 /**
- * Add action links to the drop-down menu.
+ * Test if we should show the improve these subtlitles link
+ * @this {DropDown}
+ */
+unisubs.widget.DropDown.prototype.shouldShowImproveSubtitles_ = function() {
+    if(!this.subtitleState_.IS_DEPENDENT && !this.canSubtitle_) {
+        return false;
+    }
+    if(this.subtitleState_.IS_COMPLETE && !this.canPostEdit_) {
+        return false;
+    }
+    return true;
+}
+/**
+ * Show/Hide the action links to the drop-down menu.
  *
  * This should only be called after we have checked that the user has
  * permission to edit the subtitles.
  *
  * @this {DropDown}
  */
-unisubs.widget.DropDown.prototype.addActionLinks_ = function() {
-    if(this.showImproveSubtitlesLink_) {
-      goog.dom.insertChildAt(this.videoActions_, this.improveSubtitlesLink_, 0);
+unisubs.widget.DropDown.prototype.updateActionLinks_ = function() {
+
+    if(!this.subtitleState_) {
+        unisubs.style.showElement(this.addLanguageLink_, false);
+        unisubs.style.showElement(this.improveSubtitlesLink_, false);
+        unisubs.style.showElement(this.moderatedNotice_, false);
+        return;
     }
-    if(this.showAddLanguageLink_) {
-      goog.dom.insertChildAt(this.videoActions_, this.addLanguageLink_, 0);
-    }
-    if(!(this.showAddLanguageLink_ || this.showImproveSubtitlesLink_)) {
-      this.addModeratedNotice_();
-    }
+
+    var shouldShowImprove = this.shouldShowImproveSubtitles_();
+    var shouldShowAdd = this.canTranslate_;
+    var shouldShowModerated = !(shouldShowImprove || shouldShowAdd);
+
+    unisubs.style.showElement(this.addLanguageLink_, shouldShowAdd);
+    unisubs.style.showElement(this.improveSubtitlesLink_, shouldShowImprove);
+    unisubs.style.showElement(this.moderatedNotice_, shouldShowModerated);
 };
 unisubs.widget.DropDown.prototype.updateActions_ = function() {
     this.getDomHelper().removeChildren(this.videoActions_);
     this.getDomHelper().removeChildren(this.settingsActions_);
 
+    goog.dom.append(this.videoActions_,
+                    this.moderatedNotice_,
+                    this.addLanguageLink_,
+                    this.improveSubtitlesLink_,
+                    this.subtitleHomepageLink_,
+                    this.getEmbedCodeLink_,
+                    this.downloadSubtitlesLink_);
+
     if (this.isModerated()) {
         if (unisubs.isEmbeddedInDifferentDomain()) {
-            this.addModeratedNotice_();
+            this.canTranslate_ = this.canSubtitle_ = this.canPostEdit_ = false;
+            this.updateActionLinks_();
         } else {
             this.addModeratedActionLinks_();
         }
     } else {
-        this.showAddLanguageLink_ = true;
-        this.showImproveSubtitlesLink_ = true;
-        this.addActionLinks_();
+        this.canTranslate_ = this.canSubtitle_ = this.canPostEdit_ = true;
+        this.updateActionLinks_();
     }
-
-    goog.dom.append(this.videoActions_,
-                    this.subtitleHomepageLink_,
-                    this.getEmbedCodeLink_,
-                    this.downloadSubtitlesLink_);
 
     if (unisubs.currentUsername === null) {
         this.settingsActions_.appendChild(this.createAccountLink_);
