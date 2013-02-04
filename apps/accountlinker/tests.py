@@ -301,3 +301,32 @@ class AccountTest(TestCase):
         ThirdPartyAccount.objects.mirror_on_third_party(video, 'en', UPDATE_VERSION_ACTION, version)
 
         youtube_type_mock.update_subtitles.assert_called_once_with(version, tpa)
+
+    def test_mirror_on_third_party_two_urls(self):
+        from videos.types import UPDATE_VERSION_ACTION
+        from videos.types import video_type_registrar
+        from videos.types.youtube import YoutubeVideoType
+
+        video, _ = Video.get_or_create_for_url('http://www.youtube.com/watch?v=tEajVRiaSaQ')
+        video_url = VideoUrl(video=video, type='Y', url='http://www.youtube.com/watch?v=r9DVFUoXiwA',
+                             original=True, owner_username='PCFQA', videoid='r9DVFUoXiwA')
+        video_url.save()
+
+        self.assertEquals(Video.objects.get(id=video.id).videourl_set.count(), 2)
+
+        tpa = ThirdPartyAccount(oauth_access_token='123', oauth_refresh_token='', 
+                                 username='PCFQA', full_name='PCFQA', type='Y')
+        tpa.save()
+
+        _set_subtitles(video, 'en', True, True, [])
+        language = video.subtitle_language('en')
+        version = language.subtitleversion_set.all()[0]
+
+        youtube_type_mock = Mock(spec=YoutubeVideoType)
+        video_type_registrar.video_type_for_url = Mock()
+        video_type_registrar.video_type_for_url.return_value = youtube_type_mock
+
+        ThirdPartyAccount.objects.mirror_on_third_party(video, 'en', UPDATE_VERSION_ACTION, version)
+
+        self.assertTrue(youtube_type_mock.update_subtitles.called)
+        self.assertEquals(youtube_type_mock.update_subtitles.call_count, 2)
