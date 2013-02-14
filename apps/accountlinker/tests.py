@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2012 Participatory Culture Foundation
+# Copyright (C) 2013 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,7 +20,6 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from teams.moderation_const import APPROVED, UNMODERATED, WAITING_MODERATION
 from accountlinker.models import (
     ThirdPartyAccount, YoutubeSyncRule, check_authorization, can_be_synced
 )
@@ -28,10 +27,34 @@ from videos.models import Video, VideoUrl, SubtitleLanguage
 from teams.models import Team, TeamVideo
 from auth.models import CustomUser as User
 from tasks import get_youtube_data
+from subtitles.pipeline import add_subtitles
+from apps.testhelpers import views as helpers
 
+from mock import Mock
+
+def _set_subtitles(video, language, original, complete, translations=[]):
+    translations = [{'code': lang, 'is_original': False, 'is_complete': True,
+                     'num_subs': 1} for lang in translations]
+
+    data = {'code': language, 'is_original': original, 'is_complete': complete,
+            'num_subs': 1, 'translations': translations}
+
+    helpers._add_lang_to_video(video, data, None)
+
+def assert_update_subtitles(version_or_language, account):
+    assert version_or_language != None
+    assert account != None
 
 class AccountTest(TestCase):
     fixtures = ["staging_users.json", "staging_videos.json", "staging_teams.json"]
+
+    def setUp(self):
+        self.vurl = VideoUrl.objects.filter(type='Y')[1]
+        subs = [
+            (0, 1000, 'Hello', {}),
+            (2000, 5000, 'word', {})
+        ]
+        add_subtitles(self.vurl.video, 'en', subs)
 
     def test_retrieval(self):
 
@@ -127,51 +150,16 @@ class AccountTest(TestCase):
         self.assertTrue(ignore)
 
     def test_not_complete(self):
-        vurl = VideoUrl.objects.filter(type='Y')[1]
-        version = vurl.video.subtitle_language('en').latest_version()
-        self.assertFalse(version.language.is_complete)
+        version = self.vurl.video.subtitle_language().get_tip()
+        self.assertFalse(version.subtitle_language.subtitles_complete)
         self.assertFalse(can_be_synced(version))
 
-        version.language.is_complete = True
-        version.language.save()
+        version.subtitle_language.subtitles_complete = True
+        version.subtitle_language.save()
 
         self.assertTrue(version.is_public)
         self.assertTrue(version.is_synced())
-        self.assertEquals(version.moderation_status, UNMODERATED)
 
-        self.assertTrue(can_be_synced(version))
-
-        vurl = VideoUrl.objects.filter(type='Y')[0]
-        version = vurl.video.subtitle_language('en').latest_version()
-
-        language = version.language
-        language.is_complete = True
-        language.save()
-
-        self.assertTrue(version.language.is_complete)
-        self.assertEquals(version.moderation_status, UNMODERATED)
-        self.assertTrue(version.is_public)
-        self.assertFalse(version.is_synced())
-
-        self.assertFalse(can_be_synced(version))
-
-    def test_not_approved(self):
-        vurl = VideoUrl.objects.filter(type='Y')[1]
-        version = vurl.video.subtitle_language('en').latest_version()
-
-        version.language.is_complete = True
-        version.language.save()
-
-        self.assertTrue(version.is_public)
-        self.assertTrue(version.is_synced())
-        self.assertEquals(version.moderation_status, UNMODERATED)
-
-        version.moderation_status = WAITING_MODERATION
-        version.save()
-        self.assertFalse(can_be_synced(version))
-
-        version.moderation_status = APPROVED
-        version.save()
         self.assertTrue(can_be_synced(version))
 
     def test_mirror_existing(self):
@@ -239,3 +227,50 @@ class AccountTest(TestCase):
 
         is_authorized, ignore = check_authorization(video)
         self.assertTrue(is_authorized)
+
+    def test_resolve_ownership(self):
+        video, _ = Video.get_or_create_for_url('http://www.youtube.com/watch?v=tEajVRiaSaQ')
+
+        tpa1 = ThirdPartyAccount(oauth_access_token='123', oauth_refresh_token='', 
+                                 username='PCFQA', full_name='PCFQA', type='Y')
+        tpa1.save()
+
+        tpa2 = ThirdPartyAccount(oauth_access_token='123', oauth_refresh_token='',
+                                 username='PCFQA_not_this_one', full_name='PCFQA', type='Y')
+        tpa2.save()
+
+        video_url = video.get_primary_videourl_obj()
+        owner = ThirdPartyAccount.objects.resolve_ownership(video_url)
+
+        self.assertEquals(owner.username, 'PCFQA')
+        self.assertEquals(owner.full_name, 'PCFQA')
+        self.assertEquals(owner.type, 'Y')
+
+        video, _ = Video.get_or_create_for_url('http://www.youtube.com/watch?v=9bZkp7q19f0')
+
+        video_url = video.get_primary_videourl_obj()
+        owner = ThirdPartyAccount.objects.resolve_ownership(video_url)
+
+        self.assertEquals(owner, None)
+
+    def test_mirror_on_third_party(self):
+        from videos.types import UPDATE_VERSION_ACTION
+        from videos.types import video_type_registrar
+        from videos.types.youtube import YoutubeVideoType
+
+        video, _ = Video.get_or_create_for_url('http://www.youtube.com/watch?v=tEajVRiaSaQ')
+        tpa = ThirdPartyAccount(oauth_access_token='123', oauth_refresh_token='', 
+                                 username='PCFQA', full_name='PCFQA', type='Y')
+        tpa.save()
+
+        _set_subtitles(video, 'en', True, True, [])
+        language = video.subtitle_language('en')
+        version = language.subtitleversion_set.all()[0]
+
+        youtube_type_mock = Mock(spec=YoutubeVideoType)
+        video_type_registrar.video_type_for_url = Mock()
+        video_type_registrar.video_type_for_url.return_value = youtube_type_mock
+
+        ThirdPartyAccount.objects.mirror_on_third_party(video, 'en', UPDATE_VERSION_ACTION, version)
+
+        youtube_type_mock.update_subtitles.assert_called_once_with(version, tpa)

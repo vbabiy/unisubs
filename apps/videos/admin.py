@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2012 Participatory Culture Foundation
+# Copyright (C) 2013 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,9 +34,12 @@ class VideoUrlInline(admin.StackedInline):
 
 class VideoAdmin(admin.ModelAdmin):
     actions = None
-    list_display = ['__unicode__', 'video_thumbnail', 'languages', 'languages_count', 'is_subtitled']
+    list_display = ['__unicode__', 'video_thumbnail', 'languages',
+                    'languages_count', 'is_subtitled',
+                    'primary_audio_language_code']
     search_fields = ['video_id', 'title', 'videourl__url', 'user__username']
-    readonly_fields = ['subtitles_fetched_count', 'widget_views_count', 'view_count']
+    readonly_fields = ['subtitles_fetched_count', 'widget_views_count',
+                       'view_count']
     raw_id_fields = ['user', 'moderated_by']
     inlines = [VideoUrlInline]
 
@@ -83,7 +86,7 @@ class SubtitleLanguageAdmin(admin.ModelAdmin):
     #    for some reason.
     # 2. It's only 20 extra queries, so it's not the end of the world.
     list_display = ['video_title', 'is_original', 'language', 'is_complete',
-                    'had_version', 'subtitle_count']
+                    'had_version', 'subtitle_count', 'new_subtitle_language']
     list_filter = ['is_original', 'is_complete']
     search_fields = ['video__title', 'video__video_id', 'language']
     raw_id_fields = ['video']

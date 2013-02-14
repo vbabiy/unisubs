@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 # 
-# Copyright (C) 2012 Participatory Culture Foundation
+# Copyright (C) 2013 Participatory Culture Foundation
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,8 @@ class VideoType(object):
 
     abbreviation = None
     name = None    
-    
+
+    CAN_IMPORT_SUBTITLES = False
     def __init__(self, url):
         self.url = url
 

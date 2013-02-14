@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2012 Participatory Culture Foundation
+# Copyright (C) 2013 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -45,13 +45,13 @@ def show_youtube_prompt(request):
           dismissed the prompt
     """
 
+    if request.COOKIES.get('hide-yt-prompt') == 'yes':
+        return False
+
     user = request.user if request.user.is_authenticated() else None
 
     if not user:
         return True
-
-    if request.COOKIES.get('hide-yt-prompt') == 'yes':
-        return False
 
     accounts = user.third_party_accounts.all()
     types = [a.get_type_display() for a in accounts]
