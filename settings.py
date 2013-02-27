@@ -526,7 +526,12 @@ THUMBNAILS_SIZE = (
 
 EMAIL_BCC_LIST = []
 
-CACHE_BACKEND = 'locmem://'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unisubs'
+    }
+}
 
 #for unisubs.example.com
 RECAPTCHA_PUBLIC = '6LdoScUSAAAAANmmrD7ALuV6Gqncu0iJk7ks7jZ0'
