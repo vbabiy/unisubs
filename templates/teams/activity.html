@@ -1,11 +1,12 @@
 {% extends "teams/base.html" %}
 
-{% load i18n teams_tags paginator profiles_tags %}
+{% load i18n query_string teams_tags paginator profiles_tags %}
 
 {% block title %}
     {{ team }} | Amara
 {% endblock %}
 
+{% block html_attrs %}id="team_activity"{% endblock %}
 {% block body_attrs %}id="teams" class="v1"{% endblock %}
 
 {% block view_content %}
@@ -14,6 +15,59 @@
         {% with "activity" as current %}
             {% include "teams/_tabs.html" %}
         {% endwith %}
+
+        <div class="tools group">
+            <a href="#filter" id="sort-filter">{% trans 'Filter' %}<span></span></a>
+        </div>
+
+        <div class="filters group{% if filtered %} active{% endif %}">
+            <p>
+                <div class="filter-chunk">
+                    <span class="inner">{% trans 'Showing' %}</span>
+                    <select name="type-filter" id="type-filter">
+                        <option value="{{ request.path }}{% query_string request.GET type='' page='' %}">{% trans 'all' %}</option>
+                        <option value="{% query_string request.GET type='membership' %}"{% if type == 'membership' %} selected="selected"{% endif %}>{% trans 'membership' %}</option>
+                        <option value="{% query_string request.GET type='moderation' %}"{% if type == 'moderation' %} selected="selected"{% endif %}>{% trans 'moderation' %}</option>
+                        <option value="{% query_string request.GET type='subtitling' %}"{% if type == 'subtitling' %} selected="selected"{% endif %}>{% trans 'subtitling' %}</option>
+                        <option value="{% query_string request.GET type='videos' %}"{% if type == 'videos' %} selected="selected"{% endif %}>{% trans 'videos' %}</option>
+                    </select>
+                    <span class="inner">activity</span>
+                </div>
+                <div class="filter-chunk">
+                    <span class="inner">{% trans 'for' %}</span>
+                    <select name="lang-filter" id="lang-filter">
+                        <option value="{{ request.path }}{% query_string request.GET lang='' page='' %}" id="lang-opt-any">{% trans 'any language' %}</option>
+                        {% for code, name in language_choices %}
+                            <option id="lang-opt-{{ code }}" {% if code == language %}selected="selected"{% endif %} value="{% query_string request.GET lang=code page='' %}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-chunk">
+                    <span class="inner">{% trans 'by' %}</span>
+                    <span class="ajaxChosen">
+                        <select name="user_id" id="user_filter">
+                            <option value="{{ request.path }}{% query_string request.GET user='' page='' %}">{% trans "anyone" %}</option>
+                            {% if by_user %}
+                                <option selected="selected">{{ by_user }}</option>
+                            {% endif %}
+                            <option value="">{% trans 'Begin typing to search.' %}</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="filter-chunk">
+                    <span class="inner">{% trans 'for' %}</span>
+                    <select name="date-filter" id="date-filter">
+                        <option value="{{ request.path }}{% query_string request.GET year='' month='' day='' page='' %}">{% trans 'all time' %}</option>
+                        <option value="{% query_string request.GET year=today|date:'Y' month=today|date:'n' day=today|date:'j' %}">{% trans 'today' %}</option>
+                        <option value="{% query_string request.GET year=today|date:'Y' month=today|date:'n' %}">{% trans 'this month' %}</option>
+                        <option value="{% query_string request.GET year=today|date:'Y' %}">{% trans 'this year' %}</option>
+                    </select>
+                </div>
+            </p>
+            {% if filtered %}
+                <a href="{% url teams:activity team.slug %}" class="clear-filters">{% trans 'Clear' %}</a>
+            {% endif %}
+        </div>
 
         {% if activity_list %}
             <ul class="activity listing">

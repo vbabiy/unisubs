@@ -2170,8 +2170,21 @@ class ActionRenderer(object):
         return msg
 
 class ActionManager(models.Manager):
-    def for_team(self, team, public_only=True, ids=False):
+    def for_team(self, team, filters=None, public_only=True, ids=False):
         '''Return the actions for the given team.
+
+        filters can be a dict containing any of the following:
+            language    the language code (e.g. 'en')
+            video       the video ID
+            by_user     the username
+            year        4-digit year
+            month       month number
+            day         day number
+            type        one of the following action type groups:
+                            video (video adds/removals, url changes)
+                            membership (joins, leaves)
+                            moderation (approvals, rejections, etc)
+                            subtitling (new versions and translations)
 
         If public_only is True, only Actions that should be shown to the general
         public will be returned.
@@ -2185,6 +2198,40 @@ class ActionManager(models.Manager):
             Q(team=team) |
             Q(video__teamvideo__team=team)
         )
+
+        if filters:
+            if filters.get('language'):
+                result = result.filter(
+                    language__language=filters.get('language'))
+
+            if filters.get('video'):
+                result = result.filter(video=filters.get('video'))
+
+            if filters.get('by_user'):
+                result = result.filter(user__username=filters.get('by_user'))
+
+            if filters.get('year'):
+                result = result.filter(created__year=filters.get('year'))
+
+            if filters.get('month'):
+                result = result.filter(created__month=filters.get('month'))
+
+            if filters.get('day'):
+                result = result.filter(created__day=filters.get('day'))
+
+            if filters.get('type'):
+                type_list = []
+
+                if filters.get('type') == 'video':
+                    type_list.extend([1,5,15,16,17])
+                if filters.get('type') == 'membership':
+                    type_list.extend([9,11])
+                if filters.get('type') == 'moderation':
+                    type_list.extend([3,8,10,12,13,14])
+                if filters.get('type') == 'subtitling':
+                    type_list.extend([4,6])
+
+                result = result.filter(action_type__in=type_list)
 
         if public_only:
             result = result.filter(language__has_version=True)

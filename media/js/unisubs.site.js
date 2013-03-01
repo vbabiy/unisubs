@@ -647,6 +647,22 @@ var Site = function(Site) {
             that.Utils.resetLangFilter();
             that.Utils.chosenify();
         },
+        team_activity: function() {
+            that.Utils.resetLangFilter();
+            that.Utils.chosenify();
+
+            $('#user_filter', '.filters').change(function(e) {
+                var uid = $(this).children('option:selected').attr('value')
+                var url = $(this).children('option:first').attr('value')
+
+                if(url.indexOf('?') === -1) {
+                    url += '?'
+                } else {
+                    url += '&'
+                }
+                window.location = url + 'user=' + uid;
+            });
+        },
         team_tasks: function() {
             $('a.action-assign').click(function(e) {
 

@@ -17,6 +17,7 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 import logging
 import random
+from datetime import datetime
 
 import teams.moderation_const as MODERATION
 import widget
@@ -681,6 +682,15 @@ def remove_video(request, team_video_pk):
         messages.success(request, msg)
         return HttpResponseRedirect(next)
 
+def _get_activity_filters(request):
+    return { 'language': request.GET.get('lang'),
+             'type': request.GET.get('type'),
+             'video': request.GET.get('video'),
+             'by_user': request.GET.get('user'),
+             'year': request.GET.get('year'),
+             'month': request.GET.get('month'),
+             'day': request.GET.get('day') }
+
 @timefn
 @render_to('teams/activity.html')
 def activity(request, slug):
@@ -694,11 +704,18 @@ def activity(request, slug):
 
     public_only = False if member else True
 
+    filtered = False
+
+    filters = _get_activity_filters(request)
+    if any(filters.values()):
+        filtered = True
+
     # This section is here to work around MySQL's poor decisions.
     #
     # Much like the Tasks page, this query performs extremely poorly when run
     # normally.  So we split it into two parts here so that each will run fast.
-    action_ids = Action.objects.for_team(team, public_only=public_only, ids=True)
+    action_ids = Action.objects.for_team(team, filters, public_only=public_only,
+                                         ids=True)
     action_ids, pagination_info = paginate(action_ids, ACTIONS_ON_PAGE,
                                            request.GET.get('page'))
     action_ids = list(action_ids)
@@ -708,11 +725,20 @@ def activity(request, slug):
     ).order_by())
     activity_list.sort(key=lambda a: action_ids.index(a.pk))
 
+    # Set up language choices for filtering menu
+    readable_langs = TeamLanguagePreference.objects.get_readable(team)
+    language_choices = [(code, name) for code, name in get_language_choices()
+                        if code in readable_langs]
+
     context = {
         'activity_list': activity_list,
         'team': team,
-        'member': member
+        'member': member,
+        'filtered': filtered,
+        'language_choices': language_choices,
+        'today': datetime.now()
     }
+    context.update(filters)
     context.update(pagination_info)
 
     return context
