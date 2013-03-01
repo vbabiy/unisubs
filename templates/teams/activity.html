@@ -29,7 +29,7 @@
                         <option value="{% query_string request.GET type='membership' %}"{% if type == 'membership' %} selected="selected"{% endif %}>{% trans 'membership' %}</option>
                         <option value="{% query_string request.GET type='moderation' %}"{% if type == 'moderation' %} selected="selected"{% endif %}>{% trans 'moderation' %}</option>
                         <option value="{% query_string request.GET type='subtitling' %}"{% if type == 'subtitling' %} selected="selected"{% endif %}>{% trans 'subtitling' %}</option>
-                        <option value="{% query_string request.GET type='videos' %}"{% if type == 'videos' %} selected="selected"{% endif %}>{% trans 'videos' %}</option>
+                        <option value="{% query_string request.GET type='video' %}"{% if type == 'video' %} selected="selected"{% endif %}>{% trans 'video' %}</option>
                     </select>
                     <span class="inner">activity</span>
                 </div>

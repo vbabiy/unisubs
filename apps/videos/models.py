@@ -2223,7 +2223,7 @@ class ActionManager(models.Manager):
                 type_list = []
 
                 if filters.get('type') == 'video':
-                    type_list.extend([1,5,15,16,17])
+                    type_list.extend([1,2,5,15,16,17])
                 if filters.get('type') == 'membership':
                     type_list.extend([9,11])
                 if filters.get('type') == 'moderation':
