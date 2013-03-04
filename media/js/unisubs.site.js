@@ -648,19 +648,45 @@ var Site = function(Site) {
             that.Utils.chosenify();
         },
         team_activity: function() {
-            that.Utils.resetLangFilter();
             that.Utils.chosenify();
+
+            var base_url = $('#user-filter option:first').attr('value')
+
+            $('select#user_filter', '.ajaxChosen').ajaxChosen({
+                method: 'GET',
+                url: '/en/teams/' + window.TEAM_SLUG + '/members/search/',
+                dataType: 'json'
+            }, function (data) {
+                var terms = {};
+
+                $.each(data.results, function (i, val) {
+                    var username = data.results[i][1].match(/\(([^)]+)\)/)[1]
+                    terms[username] = data.results[i][1];
+                });
+
+                return terms;
+            });
 
             $('#user_filter', '.filters').change(function(e) {
                 var uid = $(this).children('option:selected').attr('value')
-                var url = $(this).children('option:first').attr('value')
+                var url = window.BASE_URL
 
-                if(url.indexOf('?') === -1) {
-                    url += '?'
-                } else {
-                    url += '&'
+                /* If a user's been selected, build the querystring here.
+                   We do this because the default behavior for this element
+                   expects the option's value to be the full url whereas here
+                   we only have a username (and we can't make the value a URL
+                   in the .ajaxChosen code above because it contains invalid
+                   tokens).
+                */
+                if(url !== uid) {
+                    if(url.indexOf('?') === -1) {
+                        url += '?'
+                    } else {
+                        url += '&'
+                    }
+                    url += 'user=' + uid
                 }
-                window.location = url + 'user=' + uid;
+                window.location = url;
             });
         },
         team_tasks: function() {

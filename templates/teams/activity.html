@@ -1,6 +1,6 @@
 {% extends "teams/base.html" %}
 
-{% load i18n query_string teams_tags paginator profiles_tags %}
+{% load i18n query_string teams_tags paginator profiles_tags media_compressor %}
 
 {% block title %}
     {{ team }} | Amara
@@ -8,6 +8,16 @@
 
 {% block html_attrs %}id="team_activity"{% endblock %}
 {% block body_attrs %}id="teams" class="v1"{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    {% include_bundle "unisubs-offsite-compiled" %}
+    {% include_bundle "js-teams" %}
+    <script type="text/javascript">
+        window.TEAM_SLUG = '{{ team.slug }}';
+        window.BASE_URL = '{{ request.path }}{% query_string request.GET user='' page='' %}';
+    </script>
+{% endblock %}
 
 {% block view_content %}
 
@@ -33,15 +43,17 @@
                     </select>
                     <span class="inner">activity</span>
                 </div>
-                <div class="filter-chunk">
-                    <span class="inner">{% trans 'for' %}</span>
-                    <select name="lang-filter" id="lang-filter">
-                        <option value="{{ request.path }}{% query_string request.GET lang='' page='' %}" id="lang-opt-any">{% trans 'any language' %}</option>
-                        {% for code, name in language_choices %}
-                            <option id="lang-opt-{{ code }}" {% if code == language %}selected="selected"{% endif %} value="{% query_string request.GET lang=code page='' %}">{{ name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                {% if language or type != 'membership' and type != 'video' %}
+                    <div class="filter-chunk">
+                        <span class="inner">{% trans 'for' %}</span>
+                        <select name="lang-filter" id="lang-filter">
+                            <option value="{{ request.path }}{% query_string request.GET lang='' page='' %}" id="lang-opt-any">{% trans 'any language' %}</option>
+                            {% for code, name in language_choices %}
+                                <option id="lang-opt-{{ code }}"{% if code == language %}selected="selected"{% endif %} value="{% query_string request.GET lang=code page='' %}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
                 <div class="filter-chunk">
                     <span class="inner">{% trans 'by' %}</span>
                     <span class="ajaxChosen">
@@ -55,12 +67,12 @@
                     </span>
                 </div>
                 <div class="filter-chunk">
-                    <span class="inner">{% trans 'for' %}</span>
+                    <span class="inner">{% trans 'from' %}</span>
                     <select name="date-filter" id="date-filter">
-                        <option value="{{ request.path }}{% query_string request.GET year='' month='' day='' page='' %}">{% trans 'all time' %}</option>
-                        <option value="{% query_string request.GET year=today|date:'Y' month=today|date:'n' day=today|date:'j' %}">{% trans 'today' %}</option>
-                        <option value="{% query_string request.GET year=today|date:'Y' month=today|date:'n' %}">{% trans 'this month' %}</option>
-                        <option value="{% query_string request.GET year=today|date:'Y' %}">{% trans 'this year' %}</option>
+                        <option value="{{ request.path }}{% query_string request.GET year='' month='' day='' page='' %}">{% trans 'any time' %}</option>
+                        <option value="{% query_string request.GET year=today.year month=today.month day=today.day %}"{% if year == today.year|slugify and month == today.month|slugify and day == today.day|slugify %}selected="selected"{% endif %}>{% trans 'today' %}</option>
+                        <option value="{% query_string request.GET year=today.year month=today.month day='' %}"{% if year == today.year|slugify and month == today.month|slugify and not day %}selected="selected"{% endif %}>{% trans 'this month' %}</option>
+                        <option value="{% query_string request.GET year=today.year month='' day='' %}"{% if year == today.year|slugify and not month %}selected="selected"{% endif %}>{% trans 'this year' %}</option>
                     </select>
                 </div>
             </p>
