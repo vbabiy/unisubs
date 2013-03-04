@@ -381,6 +381,7 @@ INSTALLED_APPS = (
     'sorl.thumbnail',
     'south',
     'tastypie',
+    'django_rq',
     # third party apps forked on our repo
     'localeurl',
     'openid_consumer',

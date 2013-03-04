@@ -22,7 +22,7 @@ from urllib import urlopen
 from celery.decorators import periodic_task
 from celery.schedules import crontab, timedelta
 from celery.signals import task_failure
-from celery.task import task
+from django_rq import job as task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.files.base import ContentFile
@@ -116,7 +116,7 @@ def update_video_feed(video_feed_id):
         msg = '**update_video_feed**. VideoFeed does not exist. ID: %s' % video_feed_id
         client.captureMessage(msg)
 
-@task(ignore_result=False)
+@task
 def add(a, b):
     print "TEST TASK FOR CELERY. EXECUTED WITH ARGUMENTS: %s %s" % (a, b)
     return (a, b, a+b)
@@ -140,7 +140,7 @@ def raise_exception(msg, **kwargs):
 
     raise TypeError(msg)
 
-@task()
+@task
 def video_changed_tasks(video_pk, new_version_id=None):
     from videos import metadata_manager
     from videos.models import Video
@@ -161,7 +161,7 @@ def video_changed_tasks(video_pk, new_version_id=None):
 
     video.update_search_index()
 
-@task()
+@task
 def send_change_title_email(video_id, user_id, old_title, new_title):
     from videos.models import Video
     from auth.models import CustomUser as User
@@ -193,7 +193,7 @@ def send_change_title_email(video_id, user_id, old_title, new_title):
                              'videos/email_title_changed.html',
                              context, fail_silently=not settings.DEBUG)
 
-@task()
+@task
 def import_videos_from_feeds(urls, user_id=None, team_id=None):
     from auth.models import CustomUser as User
     from teams.models import Team, TeamVideo
@@ -246,7 +246,7 @@ def import_videos_from_feeds(urls, user_id=None, team_id=None):
     if user:
         notifier.videos_imported_message.delay(user_id, len(videos))
 
-@task()
+@task
 def upload_subtitles_to_original_service(version_pk):
     _update_captions_in_original_service(version_pk)
 

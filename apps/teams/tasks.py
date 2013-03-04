@@ -2,7 +2,7 @@ from datetime import datetime
 
 from celery.decorators import periodic_task
 from celery.schedules import crontab, timedelta
-from celery.task import task
+from django_rq import job as task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import F
@@ -20,7 +20,7 @@ from widget.video_cache import (
 from utils.metrics import Timer
 from apps.videos.tasks import video_changed_tasks
 
-@task()
+@task
 def invalidate_video_caches(team_id):
     """Invalidate all TeamVideo caches for all the given team's videos."""
     from apps.teams.models import Team
@@ -28,13 +28,13 @@ def invalidate_video_caches(team_id):
     for video_id in team.teamvideo_set.values_list('video__video_id', flat=True):
         invalidate_video_cache(video_id)
 
-@task()
+@task
 def invalidate_video_moderation_caches(team):
     """Invalidate the moderation status caches for all the given team's videos."""
     for video_id in team.teamvideo_set.values_list('video__video_id', flat=True):
         invalidate_video_moderation(video_id)
 
-@task()
+@task
 def update_video_moderation(team):
     """Set the moderated_by field for all the given team's videos."""
     from apps.videos.models import Video
@@ -42,12 +42,12 @@ def update_video_moderation(team):
     moderated_by = team if team.moderates_videos() else None
     Video.objects.filter(teamvideo__team=team).update(moderated_by=moderated_by)
 
-@task()
+@task
 def invalidate_video_visibility_caches(team):
     for video_id in team.teamvideo_set.values_list("video__video_id", flat=True):
         invalidate_video_visibility(video_id)
 
-@task()
+@task
 def update_video_public_field(team_id):
     from apps.teams.models import Team
 
@@ -116,7 +116,7 @@ def add_videos_notification(*args, **kwargs):
                                  context, fail_silently=not settings.DEBUG)
 
 
-@task()
+@task
 def update_one_team_video(team_video_id):
     """Update the Solr index for the given team video."""
     from teams.models import TeamVideo
@@ -130,7 +130,7 @@ def update_one_team_video(team_video_id):
         tv_search_index, [team_video])
 
 
-@task()
+@task
 def api_notify_on_subtitles_activity(team_pk, event_name, version_pk):
     from teams.models import TeamNotificationSetting
     from videos.models import SubtitleVersion
@@ -139,7 +139,7 @@ def api_notify_on_subtitles_activity(team_pk, event_name, version_pk):
             video_id=version.language.video.video_id,
             language_pk=version.language.pk, version_pk=version_pk)
 
-@task()
+@task
 def api_notify_on_language_activity(team_pk, event_name, language_pk):
     from teams.models import TeamNotificationSetting
     from videos.models import SubtitleLanguage
@@ -147,12 +147,12 @@ def api_notify_on_language_activity(team_pk, event_name, language_pk):
     TeamNotificationSetting.objects.notify_team(
         team_pk, event_name, language_pk=language_pk, video_id=language.video.video_id)
 
-@task()
+@task
 def api_notify_on_video_activity(team_pk, event_name, video_id):
     from teams.models import TeamNotificationSetting
     TeamNotificationSetting.objects.notify_team(team_pk, event_name, video_id=video_id)
 
-@task()
+@task
 def api_notify_on_application_activity(team_pk, event_name, application_pk):
     from teams.models import TeamNotificationSetting
     TeamNotificationSetting.objects.notify_team(
@@ -167,7 +167,7 @@ def gauge_teams():
     Gauge('teams.TeamMember').report(TeamMember.objects.count())
 
 
-@task()
+@task
 def process_billing_report(billing_report_pk):
     from teams.models import BillingReport
     report = BillingReport.objects.get(pk=billing_report_pk)

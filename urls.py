@@ -151,7 +151,8 @@ urlpatterns = patterns('',
     url(r'auth/', include('auth.urls', namespace='auth', app_name='auth')),
     url(r'auth/', include('thirdpartyaccounts.urls', namespace='thirdpartyaccounts', app_name='thirdpartyaccounts')),
     ## Video shortlinks
-    url(r'^v/(?P<encoded_pk>\w+)/$', 'videos.views.shortlink', name='shortlink')
+    url(r'^v/(?P<encoded_pk>\w+)/$', 'videos.views.shortlink', name='shortlink'),
+    url(r'^django-rq/', include('django_rq.urls')),
 )
 
 try:
