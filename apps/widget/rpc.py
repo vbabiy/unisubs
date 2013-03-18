@@ -1106,8 +1106,9 @@ class Rpc(BaseRpc):
                 new_version = task.subtitle_version.language.latest_version(
                         public_only=True)
 
-            video_changed_tasks.delay(task.team_video.video_id,
-                    new_version.pk)
+            if new_version:
+                video_changed_tasks.delay(task.team_video.video_id,
+                        new_version.pk)
         else:
             return {'error_msg': _(u'\n'.join(flatten_errorlists(form.errors)))}
 
