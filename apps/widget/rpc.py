@@ -1102,7 +1102,12 @@ class Rpc(BaseRpc):
             elif form.cleaned_data['approved'] == Task.APPROVED_IDS['Rejected']:
                 api_subtitles_rejected.send(task.subtitle_version)
 
-            video_changed_tasks.delay(task.team_video.video_id)
+            if not new_version:
+                new_version = task.subtitle_version.language.latest_version(
+                        public_only=True)
+
+            video_changed_tasks.delay(task.team_video.video_id,
+                    new_version.pk)
         else:
             return {'error_msg': _(u'\n'.join(flatten_errorlists(form.errors)))}
 
