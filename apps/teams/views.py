@@ -1276,6 +1276,23 @@ def dashboard(request, slug):
     
     return context
 
+@render_to('teams/leaders.html')
+def members_leaders(request, slug):
+
+    team = Team.get(slug, request.user)
+    user = request.user if request.user.is_authenticated() else None
+    try:
+        member = team.members.get(user=user)
+    except TeamMember.DoesNotExist:
+        member = None
+
+    context = {
+        'team': team,
+        'user': user
+    }
+
+    return context
+
 @timefn
 @render_to('teams/tasks.html')
 def team_tasks(request, slug, project_slug=None):

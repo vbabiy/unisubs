@@ -2871,3 +2871,50 @@ a.truncated-expand {
 #security h3 {
     margin-top: 2em;
 }
+.team_leaders .view h3 {
+    margin: 2em 0 0 10px;
+    padding-bottom: 0;
+
+    span {
+        margin-left: 1em;
+        font-size: .75em;
+        font-weight: normal;
+    }
+}
+.listing.leaders li {
+    float: left;
+    width: 202px;
+    height: 290px;
+    text-align: center;
+    margin-top: 1em;
+    padding: 1em;
+    border: none;
+    @include border-box();
+
+    img {
+        width: 178px;
+    }
+
+    h4 {
+        padding: .5em 0 .25em;
+        font-size: 1.3em;
+
+        a {
+            text-decoration: none;
+        }
+    }
+
+    p {
+        margin: 0;
+
+        span {
+            display: block;
+            padding-top: .25em;
+            font-size: 2em;
+        }
+    }
+
+    &:hover {
+        background-color: #f4f4f4;
+    }
+}

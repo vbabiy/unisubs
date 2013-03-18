@@ -1,0 +1,93 @@
+{% extends "teams/base.html" %}
+
+{% load i18n utils_tags teams_tags markup media_compressor profiles_tags %}
+
+{% block title %}
+    {% trans 'Leaders' %} - {{ team }} | Amara
+{% endblock %}
+
+{% block body_attrs %}class="v1 team_leaders" id="teams"{% endblock %}
+{% block html_attrs %}id="team_leaders"{% endblock %}
+
+{% block view_content %}
+
+    <div class="grid_8 view omega">
+        {% with "members" as current %}
+            {% if not project %}
+                {% include 'teams/_tabs.html' %}
+            {% else %}
+                {% include 'teams/_tabs_projects.html' %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="tools">
+            {% include 'teams/_search.html' %}
+            {% if team|can_invite_to_team:user %}
+                <a href="{% url teams:invite_members slug=team.slug %}" class="button reduced">{% trans 'Invite Members' %}</a>
+            {% endif %}
+        </div>
+
+        <h3>
+            {% trans "Top Contributors" %}
+            <span>
+                <a href="{% url teams:detail_members team.slug %}">{% trans "Browse all members" %}</a>
+            </span>
+        </h3>
+        <ul class="listing leaders">
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/e243b483850863196f22c584f3d4b2af?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">Buchat Ryami</a>
+                </h4>
+                <p><span>12,344</span> lines</p>
+            </li>
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/ed5f8514dd19426806d80286ad76f44f?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">Greta Kölm</a>
+                </h4>
+                <p><span>11,102</span> lines</p>
+            </li>
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/f39d9bf5294b4a91dff19bbd8bea6a04?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">Dashdorj Bayasgalan</a>
+                </h4>
+                <p><span>11,006</span> lines</p>
+            </li>
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/ae6972bcfe79ba3c3feed7d335c35889?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">Adam Yu</a>
+                </h4>
+                <p><span>10,764</span> lines</p>
+            </li>
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/2646e5702bf9560d5bf87d8ca153382e?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">Clara Sohle</a>
+                </h4>
+                <p><span>9,102</span> lines</p>
+            </li>
+            <li>
+                <a href="#" title="Person">
+                    <img src="http://www.gravatar.com/avatar/2c5e57a455c12b4dcd500e241cc00fd5?s=240&d=mm" alt="avatar" />
+                </a>
+                <h4>
+                    <a href="#" title="Person">T. Reynolds</a>
+                </h4>
+                <p><span>8,006</span> lines</p>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
