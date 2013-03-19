@@ -168,7 +168,7 @@ def video_changed_tasks(video_pk, new_version_id=None):
         # we're talking about so we need do some queries.
         records = BillingRecord.objects.select_related('language').filter(
                 video__pk=video_pk)
-        existing_languages = [r.language.pk for r in records]
+        existing_languages = [r.subtitle_language.pk for r in records]
         unbilled_languages = SubtitleLanguage.objects.filter(
                 video__pk=video_pk).exclude(pk__in=existing_languages)
 
