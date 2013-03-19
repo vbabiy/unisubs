@@ -160,6 +160,23 @@ def video_changed_tasks(video_pk, new_version_id=None):
                 "version_pk": new_version_id,
                 "exception": str(e)})
 
+    else:
+        from teams.models import BillingRecord
+        # We should still try to insert a billing record even though we don't
+        # have a version.  This happens when a video is
+        # publibshed/approved/reviewed.  Of course, we don't know what language
+        # we're talking about so we need do some queries.
+        records = BillingRecord.objects.select_related('language').filter(
+                video__pk=video_pk)
+        existing_languages = [r.language.pk for r in records]
+        unbilled_languages = SubtitleLanguage.objects.filter(
+                video__pk=video_pk).exclude(pk__in=existing_languages)
+
+        for lang in unbilled_languages:
+            latest_version = lang.latest_version(public_only=False)
+            if latest_version:
+                insert_billing_record.delay(latest_version.pk)
+
     video = Video.objects.get(pk=video_pk)
 
     tv = video.get_team_video()
