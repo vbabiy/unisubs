@@ -623,6 +623,10 @@ def insert_billing_record(version_pk):
     video = language.video
     tv = video.get_team_video()
 
+    if not instance.is_public:
+        celery_logger.debug('version not public')
+        return
+
     if not language.is_complete:
         celery_logger.debug('language not complete')
         return
