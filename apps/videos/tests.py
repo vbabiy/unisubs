@@ -2966,6 +2966,16 @@ class TimingChangeTest(TestCase):
 
 class CreditTest(TestCase):
 
+    fixtures = ['staging_users.json', 'staging_videos.json',
+        'staging_teams.json']
+
+    def setUp(self):
+        now = datetime(2013, 3, 22, 10, 0, 0)
+        self.video = Video.objects.filter(teamvideo__isnull=True)[0]
+        self.sl = self.video.subtitlelanguage_set.all()[0]
+        self.sv = SubtitleVersion.objects.create(language=self.sl,
+                datetime_started=now)
+
     def test_last_sub_not_synced(self):
         subs = [
             {
@@ -2983,7 +2993,7 @@ class CreditTest(TestCase):
 
         self.assertEquals(last_sub['end'], -1)
 
-        subs = add_credit(subs, 'en', duration)
+        subs = add_credit(subs, 'en', duration, self.sv)
         self.assertEquals(last_sub['text'], subs[-1]['text'])
 
     def test_straight_up_video(self):
@@ -2999,7 +3009,7 @@ class CreditTest(TestCase):
 
         duration = 10  # Seconds
 
-        subs = add_credit(subs, 'en', duration)
+        subs = add_credit(subs, 'en', duration, self.sv)
         last_sub = subs[-1]
         self.assertEquals(last_sub['text'],
                 "Subtitles by the Amara.org community")
@@ -3019,7 +3029,7 @@ class CreditTest(TestCase):
 
         duration = 10  # Seconds
 
-        subs = add_credit(subs, 'en', duration)
+        subs = add_credit(subs, 'en', duration, self.sv)
         last_sub = subs[-1]
         self.assertEquals(last_sub['text'],
                 "Subtitles by the Amara.org community")
@@ -3038,7 +3048,7 @@ class CreditTest(TestCase):
             }
         ]
 
-        subs = add_credit(subs, 'en', duration)
+        subs = add_credit(subs, 'en', duration, self.sv)
         self.assertEquals(len(subs), 1)
         last_sub = subs[-1]
         self.assertEquals(last_sub['text'], 'text')
