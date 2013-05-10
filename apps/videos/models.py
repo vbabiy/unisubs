@@ -1233,6 +1233,8 @@ class ActionRenderer(object):
             info = self.render_EDIT_URL(item)
         elif item.action_type == Action.DELETE_URL:
             info = self.render_DELETE_URL(item)
+        elif item.action_type == Action.DELETE_LANGUAGE:
+            info = self.render_DELETE_LANGUAGE(item)
         else:
             info = ''
 
@@ -1382,6 +1384,12 @@ class ActionRenderer(object):
         msg = _('  deleted url <a href="%(title)s">%(title)s</a>') % kwargs
         return msg
 
+    def render_DELETE_LANGUAGE(self, item):
+        kwargs = self._base_kwargs(item)
+        kwargs['language'] = item.new_language.get_language_code_display()
+        msg = _('An administrator deleted %(language)s subtitles for <a href="%(video_url)s">%(video_name)s</a>') % kwargs
+        return msg
+
 class ActionManager(models.Manager):
     def for_team(self, team, public_only=True, ids=False):
         '''Return the actions for the given team.
@@ -1456,6 +1464,7 @@ class Action(models.Model):
     DELETE_VIDEO = 15
     EDIT_URL = 16
     DELETE_URL = 17
+    DELETE_LANGUAGE = 18
     TYPES = (
         (ADD_VIDEO, _(u'add video')),
         (CHANGE_TITLE, _(u'change title')),
@@ -1472,6 +1481,7 @@ class Action(models.Model):
         (ACCEPT_VERSION, _(u'accept version')),
         (DECLINE_VERSION, _(u'decline version')),
         (DELETE_VIDEO, _(u'delete video')),
+        (DELETE_LANGUAGE, _(u'delete language')),
         (EDIT_URL, _(u'edit url')),
         (DELETE_URL, _(u'delete url')),
     )
@@ -1672,7 +1682,6 @@ class Action(models.Model):
         obj.created = datetime.now()
         obj.save()
 
-
     @classmethod
     def create_subrequest_handler(cls, sender, instance, created, **kwargs):
         if created:
@@ -1685,6 +1694,14 @@ class Action(models.Model):
 
             instance.action = obj
             instance.save()
+
+    @classmethod
+    def delete_language_handler(cls, subtitle_language):
+        obj = cls(video=subtitle_language.video)
+        obj.new_language = subtitle_language
+        obj.action_type = cls.DELETE_LANGUAGE
+        obj.created = datetime.now()
+        obj.save()
 
 
 post_save.connect(Action.create_comment_handler, Comment)

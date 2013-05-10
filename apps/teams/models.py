@@ -55,7 +55,7 @@ from utils import DEFAULT_PROTOCOL
 from utils.amazon import S3EnabledImageField, S3EnabledFileField
 from utils.panslugify import pan_slugify
 from utils.searching import get_terms
-from videos.models import Video, SubtitleVersion, SubtitleLanguage
+from videos.models import Video, SubtitleVersion, SubtitleLanguage, Action
 from subtitles.models import (
     SubtitleVersion as NewSubtitleVersion,
     SubtitleLanguage as NewSubtitleLanguage,
@@ -875,6 +875,7 @@ def team_video_delete(sender, instance, **kwargs):
 
 def on_language_deleted(sender, **kwargs):
     """When a language is deleted, delete all tasks associated with it."""
+    Action.delete_language_handler(sender)
     team_video = sender.video.get_team_video()
     if not team_video:
         return
