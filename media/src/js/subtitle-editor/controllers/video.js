@@ -33,21 +33,23 @@
         //
         // If this is a YouTube video, force controls.
 
-        var videoURLs = SubtitleStorage.getVideoURLs();
+        function initController(){
 
-        $scope.pop = window.Popcorn.smart('#video', videoURLs);
-        $scope.pop.controls(true);
+            var videoURLs = SubtitleStorage.getVideoURLs();
 
-        // We have to broadcast this in a timeout to make sure the TimelineController has
-        // loaded and registered it's event listener, first.
-        //
-        // There most likely is a better way to do this.
-        $scope.pop.on('canplay', function() {
-            $scope.$root.$broadcast('video-ready', $scope.pop);
-        });
-        $scope.pop.on('timeupdate', function() {
-            $scope.$root.$broadcast('video-timechanged', $scope.pop);
-        });
+            $scope.pop = window.Popcorn.smart('#video', videoURLs);
+            $scope.pop.controls(true);
+
+            // We have to broadcast this in a timeout to make sure the TimelineController has
+            // loaded and registered it's event listener, first.
+            //
+            $scope.pop.on('canplay', function() {
+                $scope.$root.$broadcast('video-ready', $scope.pop);
+            });
+            $scope.pop.on('timeupdate', function() {
+                $scope.$root.$broadcast('video-timechanged', $scope.pop);
+            });
+        }
 
         $scope.playChunk = function(start, duration) {
             // Play a specified amount of time in a video, beginning at 'start',
@@ -101,17 +103,18 @@
             $scope.pop.amarasubtitle(subtitle.$id, {
                 text: parser.markdownToHTML(value)
             });
-        }
+        };
         $scope.$root.$on('subtitle-key-up', function($event, options) {
             $scope.updateSubtitleOverlay(options.subtitle.parser,
                                          options.subtitle,
-                                         options.value)
+                                         options.value);
 
 
         });
         $scope.$root.$on('subtitle-ready', function($event, subtitle) {
             // When a subtitle is ready, we need to create a Popcorn subtitle bound to the
-            // video's Popcorn instance.
+            // video's Popcorn instance. We wait until the subtitles have been rendered, 
+            // else we block the page loading for far too long
 
             var parser = subtitle.parser;
 
@@ -126,7 +129,8 @@
                 text:  text
             });
 
-        });
+        });           // There most likely is a better way to do this.
+
         $scope.$root.$on('subtitle-selected', function($event, scope) {
 
             var parser = scope.parser;
@@ -147,6 +151,9 @@
             }
 
             $scope.updateSubtitleOverlay(parser, scope.subtitle, parser.content(scope.subtitle));
+        });
+        $scope.$watch('subtitles-fetched', function(){
+            initController();
         });
 
     };
