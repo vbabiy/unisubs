@@ -377,7 +377,7 @@ var USER_IDLE_MINUTES = 5;
                         // register first thing, else all sort of timming bugs show up because
                         // we don't have the right registry entry before loading subs
                         SubtitleListFinder.register(attrs.subtitleList, elm,
-                            angular.element(elm).controller(), scope);                        
+                            angular.element(elm).controller(), scope);
                         // set these *before* calling get subtitle since if
                         // the subs are bootstrapped it will return right away
                         scope.isEditable = attrs.editable === 'true';

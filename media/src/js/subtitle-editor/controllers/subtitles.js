@@ -121,13 +121,26 @@ var angular = angular || null;
         };
 
         $scope.setInitialDisplayLanguage = function(allLanguages, languageCode, versionNumber){
+            // we wait until the working set has been displayed to show
+            // the reference set, this way, on very large sets the ui
+            // hopefully won't be unresponsive for too long
+            function isReady(){
+                var list =SubtitleListFinder.get("working-subtitle-set");
+                return  list &&  list.scope.status == 'ready';
 
-            $scope.languages = allLanguages;
-            $scope.language = _.find(allLanguages, function(item) {
-                return item.code == languageCode;
-            });
-            $scope.languageChanged($scope.language, versionNumber);
-        }
+            }
+            var intervalID = setInterval(function(){
+                if (isReady()) {
+                    clearInterval(intervalID);
+                    $scope.languages = allLanguages;
+                    $scope.language = _.find(allLanguages, function(item) {
+                        return item.code == languageCode;
+                    });
+                    $scope.languageChanged($scope.language, versionNumber);
+                }
+            },200);
+
+        };
 
         $scope.$watch('language', $scope.languageChanged);
         $scope.$watch('version', $scope.versionChanged);
@@ -348,16 +361,21 @@ var angular = angular || null;
                 $scope.parser = this.dfxpWrapper;
                 $scope.subtitles = $scope.parser.getSubtitles().get();
 
-                $scope.status = 'ready';
             }
 
 
             // When we have subtitles for an editable set, broadcast it.
-            $timeout(function() {
-                if ($scope.isEditable) {
+            $scope.status = 'ready';
+            if ($scope.isEditable) {
                     $scope.$root.$broadcast('subtitles-fetched');
-                }
-            });
+                    // we ask to hide the modal on a timeout, else
+                    // on longer sets, the time it takes to parse, digest and
+                    // render will be long, but the modal will hide before that
+                    // happens
+                    $timeout(function(){
+                       $scope.$root.$broadcast('hide-modal');
+                    }, 300);
+            }
         };
         $scope.removeSubtitle = function(subtitle) {
             $scope.parser.removeSubtitle(subtitle);
@@ -373,10 +391,7 @@ var angular = angular || null;
         };
         $scope.setLanguageCode = function(languageCode) {
             $scope.languageCode = languageCode;
-
-            SubtitleStorage.getLanguageMap(function(languageMap) {
-                $scope.languageName = languageMap[$scope.languageCode];
-            });
+            $scope.languageName = SubtitleStorage.getLanguageName(languageCode);
         };
         $scope.setVideoID = function(videoID) {
             $scope.videoID = videoID;
