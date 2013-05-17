@@ -138,250 +138,252 @@ div.modal {
         @include box-shadow(0, 0, 30px, rgba(black, .4));
 
         h1 {
-            font: normal 17px $OpenSans;
             margin-bottom: 20px;
             
             &.loading {
-                margin-bottom: 0;
-            }
-        }
-        p {
-            color: #AEAEAE;
-            font: normal 12px/20px $OpenSans;
-            margin-bottom: 20px;
-        }
-        div.buttons {
-            margin-top: 40px;
-            text-align: right;
-        }
-        div.download {
-            textarea {
-                background: #E3E6E9;
-                font: normal 12px monospace;
-                height: 100px;
-                margin-bottom: 5px;
-                margin-top: 0;
-                padding: 10px;
-                width: 100%;
-                @include border-radius(3px);
-            }
-            p {
-                color: #CCC;
-            }
-        }
-    }
-}
-button {
-    border: 0;
-    color: #DEDFDF;
-    cursor: pointer;
-    display: inline-block;
-    font: normal 12px $OpenSans;
-    margin: 0 10px;
-    padding: 5px 20px;
+              /* The preloader should not use custom font, else some browsers
+               will display blank text until that font has loaded */
+              font: normal 17px $Helvetica;
+                  margin-bottom: 0;
+              }
+          }
+          p {
+              color: #AEAEAE;
+              font: normal 12px/20px $OpenSans;
+              margin-bottom: 20px;
+          }
+          div.buttons {
+              margin-top: 40px;
+              text-align: right;
+          }
+          div.download {
+              textarea {
+                  background: #E3E6E9;
+                  font: normal 12px monospace;
+                  height: 100px;
+                  margin-bottom: 5px;
+                  margin-top: 0;
+                  padding: 10px;
+                  width: 100%;
+                  @include border-radius(3px);
+              }
+              p {
+                  color: #CCC;
+              }
+          }
+      }
+  }
+  button {
+      border: 0;
+      color: #DEDFDF;
+      cursor: pointer;
+      display: inline-block;
+      font: normal 12px $OpenSans;
+      margin: 0 10px;
+      padding: 5px 20px;
 
-    @include border-radius(2px);
+      @include border-radius(2px);
 
-    &.approve {
-        background: #29B0BF url('../../../images/thumbs-up.png') 10px center no-repeat;
-    }
-    &.no {
-        background: #4A4B4C;
-    }
-    &.send-back {
-        background: #D24655 url('../../../images/thumbs-down.png') 10px center no-repeat;
-        margin-right: 5px;
-    }
-    &.yes {
-        background: #126895;
-    }
-    &:first-of-type {
-        margin-left: 0;
-    }
-    &:last-of-type {
-        margin-left: 0;
-        margin-right: 0;
-    }
-    &.last-chance {
-        background: none;
-        color: #4398C5;
-        display: block;
-        font-size: 11px;
-        margin-top: 20px;
-        padding: 0;
+      &.approve {
+          background: #29B0BF url('../../../images/thumbs-up.png') 10px center no-repeat;
+      }
+      &.no {
+          background: #4A4B4C;
+      }
+      &.send-back {
+          background: #D24655 url('../../../images/thumbs-down.png') 10px center no-repeat;
+          margin-right: 5px;
+      }
+      &.yes {
+          background: #126895;
+      }
+      &:first-of-type {
+          margin-left: 0;
+      }
+      &:last-of-type {
+          margin-left: 0;
+          margin-right: 0;
+      }
+      &.last-chance {
+          background: none;
+          color: #4398C5;
+          display: block;
+          font-size: 11px;
+          margin-top: 20px;
+          padding: 0;
 
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
+          &:hover {
+              text-decoration: underline;
+          }
+      }
+  }
 
-.column {
-    float: left;
+  .column {
+      float: left;
 
-    // Note: there's a bug in Chrome Linux that prevents proper rendering of
-    // percentage-based widths. See https://code.google.com/p/chromium/issues/detail?id=162117
-    //
-    // Thus, the following does not add up to 100%.
-    &.left {
-        min-width: 300px;
-        width: 37%;
-    }
-    &.center {
-        min-width: 300px;
-        width: 37%;
-    }
-    &.right {
-        width: 26%;
-    }
-}
-header.main {
-    background: #212223;
-    border-bottom: 1px solid #474849;
-    @include multi-box-shadow(0, -1px, 0, #151617, 0, 5px, 8px, #D7D8D9);
+      // Note: there's a bug in Chrome Linux that prevents proper rendering of
+      // percentage-based widths. See https://code.google.com/p/chromium/issues/detail?id=162117
+      //
+      // Thus, the following does not add up to 100%.
+      &.left {
+          min-width: 300px;
+          width: 37%;
+      }
+      &.center {
+          min-width: 300px;
+          width: 37%;
+      }
+      &.right {
+          width: 26%;
+      }
+  }
+  header.main {
+      background: #212223;
+      border-bottom: 1px solid #474849;
+      @include multi-box-shadow(0, -1px, 0, #151617, 0, 5px, 8px, #D7D8D9);
 
-    section.column {
-        height: 38px;
-    }
-    section.site {
-        h1 {
-            color: #949596;
-            font: normal 18px $CodePro;
-            letter-spacing: -1px;
-            margin: 0;
-            padding: 8px 12px;
-            text-transform: lowercase;
-        }
-    }
-    section.video {
-        border-left: 1px solid #2B2C2D;
-        border-right: 1px solid #2B2C2D;
-        padding: 10px;
+      section.column {
+          height: 38px;
+      }
+      section.site {
+          h1 {
+              color: #949596;
+              font: normal 18px $CodePro;
+              letter-spacing: -1px;
+              margin: 0;
+              padding: 8px 12px;
+              text-transform: lowercase;
+          }
+      }
+      section.video {
+          border-left: 1px solid #2B2C2D;
+          border-right: 1px solid #2B2C2D;
+          padding: 10px;
 
-        span.video-title {
-            color: #D0D1D2;
-            display: block;
-            font: normal 13px $OpenSans;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 100%;
+          span.video-title {
+              color: #D0D1D2;
+              display: block;
+              font: normal 13px $OpenSans;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              width: 100%;
 
-            span.subtitles-language {
-                font-weight: bold;
-            }
-            span.sep {
-                display: inline-block;
-                margin: 0 5px;
-            }
-        }
-    }
-    section.status {
-        > * {
-            height: 38px;
-        }
-        a {
-            -webkit-transition: color 0.03s linear;
-            -moz-transition: color 0.03s linear;
-            transition: color 0.03s linear;
-        }
-        div.dropdown {
-            border-right: 1px solid #2B2C2D;
-            float: right;
-            position: relative;
+              span.subtitles-language {
+                  font-weight: bold;
+              }
+              span.sep {
+                  display: inline-block;
+                  margin: 0 5px;
+              }
+          }
+      }
+      section.status {
+          > * {
+              height: 38px;
+          }
+          a {
+              -webkit-transition: color 0.03s linear;
+              -moz-transition: color 0.03s linear;
+              transition: color 0.03s linear;
+          }
+          div.dropdown {
+              border-right: 1px solid #2B2C2D;
+              float: right;
+              position: relative;
 
-            a {
-                color: #999999;
-                font: normal 11px $OpenSans;
-                display: block;
-                height: 38px;
-                padding: 11px 12px 0 12px;
-                text-decoration: none;
+              a {
+                  color: #999999;
+                  font: normal 11px $OpenSans;
+                  display: block;
+                  height: 38px;
+                  padding: 11px 12px 0 12px;
+                  text-decoration: none;
 
-                span {
-                    display: inline-block;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    width: 100%;
-                }
-                img {
-                    float: right;
-                    margin-top: 2px;
-                    @include opacity(.5);
-                    -webkit-transition: opacity 0.03s linear;
-                    -moz-transition: opacity 0.03s linear;
-                    transition: opacity 0.03s linear;
-                }
-                &:hover {
-                    color: white;
+                  span {
+                      display: inline-block;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                      width: 100%;
+                  }
+                  img {
+                      float: right;
+                      margin-top: 2px;
+                      @include opacity(.5);
+                      -webkit-transition: opacity 0.03s linear;
+                      -moz-transition: opacity 0.03s linear;
+                      transition: opacity 0.03s linear;
+                  }
+                  &:hover {
+                      color: white;
 
-                    img {
-                        @include opacity(1);
-                    }
-                }
-            }
-            ul {
-                background: #212223;
-                right: 0;
-                padding: 7px 15px;
-                position: absolute;
-                top: 58px;
-                min-width: 130px;
-                @include border-radius(3px);
+                      img {
+                          @include opacity(1);
+                      }
+                  }
+              }
+              ul {
+                  background: #212223;
+                  right: 0;
+                  padding: 7px 15px;
+                  position: absolute;
+                  top: 58px;
+                  min-width: 130px;
+                  @include border-radius(3px);
 
-                &:before {
-                    border-bottom: 12px solid #212223;
-                    border-left: 12px solid transparent;
-                    border-right: 12px solid transparent;
-                    content: "";
-                    display: block;
-                    height: 0px;
-                    position: absolute;
-                    right: 26px;
-                    top: -12px;
-                    width: 0px;
-                }
-                li {
-                    a {
-                        color: #8D8E8E;
-                        padding: 7px 0;
+                  &:before {
+                      border-bottom: 12px solid #212223;
+                      border-left: 12px solid transparent;
+                      border-right: 12px solid transparent;
+                      content: "";
+                      display: block;
+                      height: 0px;
+                      position: absolute;
+                      right: 26px;
+                      top: -12px;
+                      width: 0px;
+                  }
+                  li {
+                      a {
+                          color: #8D8E8E;
+                          padding: 7px 0;
 
-                        &:hover {
-                            color: white;
-                        }
-                    }
-                }
-            }
-            &.status {
-                a {
-                    cursor: default;
-                }
-            }
-        }
-        div.exit {
-            border-right: none;
-            text-align: center;
+                          &:hover {
+                              color: white;
+                          }
+                      }
+                  }
+              }
+              &.status {
+                  a {
+                      cursor: default;
+                  }
+              }
+          }
+          div.exit {
+              border-right: none;
+              text-align: center;
 
-            a {
-                display: inline-block;
+              a {
+                  display: inline-block;
 
-                &.save {
-                    background: #126295;
-                    color: white;
-                }
-            }
-        }
-    }
-}
-section.main {
-    /*
-     * Don't ask.
-     *
-     * Actually, do.
-     * Do ask.
-     *
-     */
+                  &.save {
+                      background: #126295;
+                      color: white;
+                  }
+              }
+          }
+      }
+  }
+  section.main {
+      /*
+       * Don't ask.
+       *
+       * Actually, do.
+       * Do ask.
+       *
+       */
     word-spacing: -3px;
     * {
         word-spacing: normal;
