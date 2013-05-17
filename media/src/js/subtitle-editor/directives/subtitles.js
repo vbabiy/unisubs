@@ -374,6 +374,10 @@ var USER_IDLE_MINUTES = 5;
                 return {
                     post: function post(scope, elm, attrs) {
 
+                        // register first thing, else all sort of timming bugs show up because
+                        // we don't have the right registry entry before loading subs
+                        SubtitleListFinder.register(attrs.subtitleList, elm,
+                            angular.element(elm).controller(), scope);                        
                         // set these *before* calling get subtitle since if
                         // the subs are bootstrapped it will return right away
                         scope.isEditable = attrs.editable === 'true';
@@ -444,8 +448,7 @@ var USER_IDLE_MINUTES = 5;
                         }
                         scope.setVideoID(attrs.videoId);
                         scope.setLanguageCode(attrs.languageCode);
-                        SubtitleListFinder.register(attrs.subtitleList, elm,
-                            angular.element(elm).controller(), scope);
+
                     }
                 };
             }
