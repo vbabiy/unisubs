@@ -131,6 +131,7 @@ class TestCaseAutomaticTasks(WebdriverTestCase):
         cls.tasks_tab.open_team_page(cls.team.slug)
 
     def tearDown(self):
+        self.browser.get_screenshot_as_file('%s.png' % self.id())
         if self.team.subtitle_policy > 10:
             self.team.subtitle_policy = 10
             self.team.save() 
@@ -211,9 +212,7 @@ class TestCaseAutomaticTasks(WebdriverTestCase):
                 'video': tv.pk,
                 'primary_audio_language_code': 'en',
                 'draft': open('apps/webdriver_testing/subtitle_data/'
-                              'less_lines.ssa'),
-                'is_complete': False,
-                'complete': 0
+                              'Timed_text.en.srt'),
                }
 
         self.data_utils.upload_subs(
@@ -232,7 +231,42 @@ class TestCaseAutomaticTasks(WebdriverTestCase):
         self.sub_editor.continue_to_next_step() #to description
         self.sub_editor.continue_to_next_step() #to review
         self.sub_editor.submit(complete=True)
+        self.browser.get_screenshot_as_file('srt_subs_submitted.png')
+        self.tasks_tab.open_page('teams/%s/tasks/?lang=all&assignee=anyone'
+                                 % self.team.slug)
+        self.assertTrue(self.tasks_tab.task_present(
+                        'Translate Subtitles into Russian', tv.title))
 
+    def test_transcription__complete_dfxp(self):
+        """Translation tasks are created for preferred languages, on complete.
+
+        """
+        tv = self.data_utils.create_video()
+        TeamVideoFactory(team=self.team, added_by=self.owner, video=tv)
+        video_data = {'language_code': 'en',
+                'video': tv.pk,
+                'primary_audio_language_code': 'en',
+                'draft': open('apps/webdriver_testing/subtitle_data/'
+                              'Timed_text.sv.dfxp'),
+               }
+
+        self.data_utils.upload_subs(
+                tv,
+                data=video_data, 
+                user=dict(username=self.contributor.username, 
+                password='password'))
+
+        self.tasks_tab.log_in(self.contributor, 'password')
+        self.tasks_tab.open_tasks_tab(self.team.slug)
+        self.tasks_tab.perform_and_assign_task('Transcribe Subtitles', tv.title)
+        self.create_modal.lang_selection(
+               # video_language='English',
+                new_language='English (incomplete)')
+        self.sub_editor.continue_to_next_step() #to syncing
+        self.sub_editor.continue_to_next_step() #to description
+        self.sub_editor.continue_to_next_step() #to review
+        self.sub_editor.submit(complete=True)
+        self.browser.get_screenshot_as_file('srt_subs_submitted.png')
         self.tasks_tab.open_page('teams/%s/tasks/?lang=all&assignee=anyone'
                                  % self.team.slug)
         self.assertTrue(self.tasks_tab.task_present(
